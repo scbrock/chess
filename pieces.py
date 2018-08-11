@@ -79,7 +79,7 @@ class GameBoard:
     def blackAttack(self):
         squares = []
         for piece in self.blackSquad:
-            if piece.name == 'P':
+            if piece.name in ['P', 'K']:
                 squares.append(piece.getAttack(self))
             squares.append(piece.getMoves(self))
         return squares
@@ -87,7 +87,7 @@ class GameBoard:
     def whiteAttack(self):
         squares = []
         for piece in self.whiteSquad:
-            if piece.name == 'P':
+            if piece.name in ['P', 'K']:
                 squares.append(piece.getAttack(self))
             squares.append(piece.getMoves(self))
         return squares
@@ -174,6 +174,31 @@ class GameBoard:
             self.board[move[0], move[1]] = 1
         board[curr_spot[0],curr_spot[1]] = 0
 
+    def kingMoves(self, king):
+        moves = []
+        x = king.pos[0]
+        y = king.pos[1]
+        # get attack squares of opposite team
+        enemyAttack = []
+        if king.team == 'w':
+            enemyAttack = self.blackAttack()
+        else:
+            enemyAttack = self.whiteAttack()
+        potential_moves = [[x+1,y],[x-1,y],[x,y+1],[x,y-1],[x+1,y+1],[x-1,y+1],[x+1,y-1],[x-1,y+1]]
+        for opt in potential_moves:
+            if self.inBounds(opt) and opt not in enemyAttack and not self.isOccupied(king, opt):
+                moves.append(opt)
+        return moves
+
+    def kingAttack(self, king):
+        squares = []
+        x = king.pos[0]
+        y = king.pos[1]
+        potential_moves = [[x+1,y],[x-1,y],[x,y+1],[x,y-1],[x+1,y+1],[x-1,y+1],[x+1,y-1],[x-1,y+1]]
+        for opt in potential_moves:
+            if self.inBounds(opt) and not self.isOccupied(king, opt):
+                squares.append(opt)
+        return squares
 
 
 class Piece:
@@ -196,6 +221,17 @@ class King(Piece):
 
     def __init__(self, pos, team):
         Piece.__init__(self, pos, team, 'K')
+
+    def getMoves(self, gameboard):
+        self.moves = gameboard.kingMoves(self)
+
+    def movePiece(self, gameboard, move):
+        self.getMoves(gameboard)
+        if move in self.moves:
+            gameboard.makeMove(self, move)
+
+    def getAttack(self, gameboard):
+        self.moves = gameboard.kingAttack(self)
 
 
 
