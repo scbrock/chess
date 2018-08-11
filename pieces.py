@@ -36,6 +36,8 @@ class GameBoard:
         self.whiteSquad.append([Bishop([2, 7], 'w'), Bishop([5, 7], 'w')])
 
         # set kings/queens
+        self.blackSquad.append([King([4,7],'b'),Queen([3,7],'b')])
+        self.whiteSquad.append([King([4,0],'w'),Queen([3,0],'w')])
 
 
     def isOccupied(self, piece, guess):
@@ -73,6 +75,22 @@ class GameBoard:
             moves.append([tempx, tempy])
             tempy -= 1
         return moves
+
+    def blackAttack(self):
+        squares = []
+        for piece in self.blackSquad:
+            if piece.name == 'P':
+                squares.append(piece.getAttack(self))
+            squares.append(piece.getMoves(self))
+        return squares
+
+    def whiteAttack(self):
+        squares = []
+        for piece in self.whiteSquad:
+            if piece.name == 'P':
+                squares.append(piece.getAttack(self))
+            squares.append(piece.getMoves(self))
+        return squares
 
     # return all diagonal moves
     def diagonalMoves(self, piece):
@@ -128,11 +146,25 @@ class GameBoard:
             moves.append([x, y + movement])
         if self.inBounds([x, y + 2 * movement]) and self.board[x, y + 2 * movement] == 0:
             moves.append([x, y + 2 * movement])
-        if self.inBounds([x + 1, y + 2 * movement]) and self.board[x + 1, y + 2 * movement] == 0:
-            moves.append([x + 1, y + 2 * movement])
-        if self.inBounds([x - 1, y + 2 * movement]) and self.board[x - 1, y + 2 * movement] == 0:
-            moves.append([x - 1, y + 2 * movement])
+        if self.inBounds([x + 1, y + movement]) and self.board[x + 1, y + movement] == 0:
+            moves.append([x + 1, y + movement])
+        if self.inBounds([x - 1, y + movement]) and self.board[x - 1, y + movement] == 0:
+            moves.append([x - 1, y + movement])
         return moves
+
+    def pawnAttack(self,piece):
+        moves = []
+        movement = 1
+        if piece.team == 'b':
+            movement = -1
+
+        if self.inBounds([x + 1, y + movement]) and self.board[x + 1, y + movement] == 0:
+            moves.append([x + 1, y + movement])
+        if self.inBounds([x - 1, y + movement]) and self.board[x - 1, y + movement] == 0:
+            moves.append([x - 1, y + movement])
+        return moves
+
+
 
     def makeMove(self, piece, move):
         curr_spot = piece.pos
@@ -151,6 +183,12 @@ class Piece:
         self.team = team
         self.name = name
         self.moves = []
+
+    def getMoves(self):
+        return []
+
+    def getAttack(self):
+        return []
 
 
 
@@ -173,6 +211,9 @@ class Pawn(Piece):
         self.getMoves(gameboard)
         if move in self.moves:
             gameboard.makeMove(self, move)
+
+    def getAttack(self, gameboard):
+        self.moves = gameboard.pawnAttack(self)
 
 
 class Knight(Piece):
